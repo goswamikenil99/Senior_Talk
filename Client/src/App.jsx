@@ -1,40 +1,93 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import Auth from './pages/auth/Auth';
-import { Button } from './components/ui/button'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Profile from './pages/profile/Profile';
-import Chat from './pages/chat/Chat';
-import demo from './Demo';
-import Demo from './Demo';
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Profile from "@/pages/profile";
+import Chat from "@/pages/chat";
+import Auth from "@/pages/auth";
+import apiClient from "@/lib/api-client";
+import { GET_USERINFO_ROUTE } from "@/lib/constants";
+import { useAppStore } from "@/store";
 
+const PrivateRoute = ({ children }) => {
+  const { userInfo } = useAppStore();
+  const isAuthenticated = !!userInfo;
+  return isAuthenticated ? children : <Navigate to="/auth" />;
+};
 
-export const App = () => {
-  const [add,setadd]=useState(0);
-  const [minus,setminus]=useState(100)
-  const check=useMemo(()=>{
-    console.log("kenil");
-    return add%2===0;
-  },[add]);
-  const a=useCallback(()=>{
-    console.log("a");
-  },[])
+const AuthRoute = ({ children }) => {
+  const { userInfo } = useAppStore();
+  const isAuthenticated = !!userInfo;
+  return isAuthenticated ? <Navigate to="/chat" /> : children;
+};
+
+function App() {
+  const { userInfo, setUserInfo } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const response = await apiClient.get(GET_USERINFO_ROUTE, {
+          withCredentials: true,
+        });
+        if (response.status === 200 && response.data.id) {
+          setUserInfo(response.data);
+        } else {
+          setUserInfo(undefined);
+        }
+      } catch (error) {
+        setUserInfo(undefined);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!userInfo) {
+      getUserData();
+    } else {
+      setLoading(false);
+    }
+  }, [userInfo, setUserInfo]);
+
+  if (loading) {
+    return <div>Loading...</div>; // Show a loading indicator while fetching user data
+  }
+
   return (
-    // <BrowserRouter>
-    // <Routes>
-    // <Route path="/auth" element={<Auth/>} />
-    // <Route path="/profile" element={<Profile/>} />
-    // <Route path="/chat" element={<Chat/>} />
-    // <Route path="*" element={<Navigate to="/auth"/>}/>
-    // </Routes>
-    // </BrowserRouter>
-    <>
-      <button onClick={()=>setadd(add+1)} className='m-10'>ADD</button>
-      <p className='m-10'>:{add}</p>
-      <p className='m-10'>{check?"Even":"ODD"}</p>
-      <button onClick={()=>setminus(minus-1)} className='m-10'>Minus</button>
-      <p className='m-10'>:{minus}</p><br /><br />
-      <Demo a={a}/>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route
+          path="/auth"
+          element={
+            <AuthRoute>
+              <Auth />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <Chat />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/auth" />} />
+      </Routes>
+    </Router>
+  );
 }
+
 export default App;

@@ -1,44 +1,50 @@
-// index.js
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import authRoute from './middlewares/AuthMiddleware.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
+import authRoutes from "./routes/AuthRoutes.js";
+import contactsRoutes from "./routes/ContactRoutes.js";
+import messagesRoutes from "./routes/MessagesRoute.js";
+import setupSocket from "./socket.js";
+import channelRoutes from "./routes/ChannelRoutes.js";
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
-const mongoUrl = process.env.DATABASE_URL;
+const port = process.env.PORT;
+const databaseURL = process.env.DATABSE_URL;
 
-app.use(cors({
-    origin : [process.env.ORIGIN],
-    methods : ["GET","POST","PUT","PATCH","DELETE"],
-    credentials : true,
-}));
+app.use(
+  cors({
+    origin: [process.env.ORIGIN],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
+
+app.use("/uploads/profiles", express.static("uploads/profiles"));
+app.use("/uploads/files", express.static("uploads/files"));
+
 app.use(cookieParser());
-
-// Middleware to parse JSON
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(mongoUrl, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((error) => console.error('Error connecting to MongoDB:', error));
+app.use("/api/auth", authRoutes);
+app.use("/api/contacts", contactsRoutes);
+app.use("/api/messages", messagesRoutes);
+app.use("/api/channel", channelRoutes);
 
-// Define a simple route
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
+const server = app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
 
-app.use("/api/auth",authRoute);
+setupSocket(server);
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+mongoose
+  .connect(databaseURL)
+  .then(() => {
+    console.log("DB Connetion Successfull");
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
