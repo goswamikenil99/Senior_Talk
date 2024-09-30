@@ -106,7 +106,7 @@ const Auth = () => {
           setUserInfo(response.data.user);
           setTemp(0);
           console.log("kenil");
-          // navigate("/profile");
+          navigate("/profile");
         }
       }
     } catch (e) {
