@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../model/UserModel.js";
 import { compare } from "bcrypt";
 import { renameSync, unlinkSync } from "fs";
+import nodemailer from "nodemailer";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 
@@ -205,3 +206,40 @@ export const removeProfileImage = async (request, response, next) => {
     return response.status(500).send("Internal Server Error.");
   }
 };
+
+const generateOtp = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+};
+export const otp=async (req,res,next)=>{
+  const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const otp = generateOtp();
+
+    // Set up Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: "kenilgoswami581@gmail.com",
+            pass: "grjl sodp kppm qyeb",
+        },
+    });
+
+    const mailOptions = {
+        from: "kenilgoswami581@gmail.com",
+        to: email,
+        subject: 'Smart Talk',
+        text: `Your OTP code is :- ${otp}`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: 'OTP sent successfully', otp }); // You may want to store the OTP for verification later
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to send OTP' });
+    }
+}

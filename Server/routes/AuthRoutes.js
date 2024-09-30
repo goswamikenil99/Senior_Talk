@@ -7,6 +7,7 @@ import {
   updateProfile,
   addProfileImage,
   removeProfileImage,
+  otp,
 } from "../controllers/AuthController.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
@@ -17,6 +18,7 @@ const upload = multer({ dest: "uploads/profiles/" });
 authRoutes.post("/signup", signup);
 authRoutes.post("/login", login);
 authRoutes.post("/logout", logout);
+authRoutes.post("/otp", otp);
 authRoutes.get("/userinfo", verifyToken, getUserInfo);
 authRoutes.post("/update-profile", verifyToken, updateProfile);
 authRoutes.post(
