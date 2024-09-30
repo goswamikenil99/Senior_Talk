@@ -15,6 +15,10 @@ const createToken = (email, userId) => {
 export const signup = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(404).send("User alredy Exist Please Login.");
+    }
     if (email && password) {
       const user = await User.create({ email, password });
       res.cookie("jwt", createToken(email, user.id), {

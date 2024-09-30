@@ -6,6 +6,7 @@ export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
 export const SIGNUP_ROUTE = `${AUTH_ROUTES}/signup`;
 export const GET_USERINFO_ROUTE = `${AUTH_ROUTES}/userinfo`;
 export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
+export const OTP_ROUTE = `${AUTH_ROUTES}/otp`;
 export const UPDATE_PROFLE_ROUTE = `${AUTH_ROUTES}/update-profile`;
 export const ADD_PROFILE_IMAGE_ROUTE = `${AUTH_ROUTES}/add-profile-image`;
 export const REMOVE_PROFILE_IMAGE_ROUTE = `${AUTH_ROUTES}/remove-profile-image`;

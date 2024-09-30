@@ -4,9 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/api-client";
-import { LOGIN_ROUTE, SIGNUP_ROUTE } from "@/lib/constants";
+import { LOGIN_ROUTE, SIGNUP_ROUTE ,OTP_ROUTE} from "@/lib/constants";
 import { useState } from "react";
 import { toast } from "sonner";
+import { validateEmail, validatePassword } from "@/utils/validation";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
 
@@ -14,6 +15,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { setUserInfo } = useAppStore();
   const [email, setEmail] = useState("");
+  const [temp,setTemp]=useState(1);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const validateLogin = () => {
@@ -21,8 +23,16 @@ const Auth = () => {
       toast.error("Email is required.");
       return false;
     }
+    if (!validateEmail(email)) {
+      toast.error("Please Enter Proper Email Address.");
+      return false;
+    }
     if (!password.length) {
       toast.error("Password is required.");
+      return false;
+    }
+    if (!validatePassword(password)) {
+      toast.error("Password must be at least 6 characters long.");
       return false;
     }
     return true;
@@ -32,8 +42,16 @@ const Auth = () => {
       toast.error("Email is required.");
       return false;
     }
+    if (!validateEmail(email)) {
+      toast.error("Please Enter Proper Email Address.");
+      return false;
+    }
     if (!password.length) {
       toast.error("Password is required.");
+      return false;
+    }
+    if (!validatePassword(password)) {
+      toast.error("Password must be at least 6 characters long.");
       return false;
     }
     if (password !== confirmPassword) {
@@ -58,8 +76,18 @@ const Auth = () => {
           console.log("error");
         }
       }
-    } catch (error) {
-      console.log(error);
+    } catch (e) {
+      if(e.response.status === Number(404)){
+        toast.error("User Not Found");
+        return false;
+      }
+      if(e.response.status === Number(400)){
+        toast.error("Invalid Password");
+        return false;
+      }
+      else{
+        toast.error("unwanted Error!!");
+      }
     }
   };
 
@@ -76,16 +104,21 @@ const Auth = () => {
         );
         if (response.status === 201) {
           setUserInfo(response.data.user);
-          navigate("/profile");
+          setTemp(0);
+          console.log("kenil");
+          // navigate("/profile");
         }
       }
-    } catch (error) {
-      console.log(error);
+    } catch (e) {
+      if(e.response.status===Number(404)){
+        return toast.error("User Alredy Exist");
+      }
+      toast.error("internal Server Error");
     }
   };
 
   return (
-    <div className="h-[100vh] w-[100vw] flex items-center justify-center">
+    temp?(<div className="h-[100vh] w-[100vw] flex items-center justify-center">
       <div className="h-[80vh] bg-white  border-2 border-white  text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
         <div className="flex flex-col gap-10 items-center justify-center">
           <div className="flex  items-center justify-center flex-col">
@@ -168,7 +201,9 @@ const Auth = () => {
         {/* Login Signup COmponent */}
         {/* Branding */}
       </div>
-    </div>
+    </div>):(
+      <h1>Hello</h1>
+    )
   );
 };
 
