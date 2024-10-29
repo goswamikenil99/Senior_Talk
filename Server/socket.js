@@ -3,7 +3,9 @@ import Message from "./model/MessagesModel.js";
 import Channel from "./model/ChannelModel.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import User from "./model/UserModel.js";
-const genAI = new GoogleGenerativeAI("AIzaSyCW8U9H4sHsPuP5fHtX90Em25o46q7N0_Q");
+import dotenv from "dotenv";
+dotenv.config();
+const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
 
 const setupSocket = (server) => {
   const io = new SocketIOServer(server, {
@@ -15,7 +17,7 @@ const setupSocket = (server) => {
   });
 
   const userSocketMap = new Map();
-  const AI_BOT_ID = "671bf8fb5b728535e42a46db";
+  const AI_BOT_ID = process.env.AI_BOT_ID;
 
   const addChannelNotify = async (channel) => {
     if (channel && channel.members) {
