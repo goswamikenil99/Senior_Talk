@@ -5,6 +5,9 @@ import { io } from "socket.io-client";
 
 const SocketContext = createContext(null);
 
+// Define AI bot ID for easy reference
+const AI_BOT_ID = "671bf8fb5b728535e42a46db"; // AI bot's _id
+
 export const useSocket = () => {
   return useContext(SocketContext);
 };
@@ -24,7 +27,6 @@ export const SocketProvider = ({ children }) => {
       });
 
       const handleReceiveMessage = (message) => {
-        // Access the latest state values
         const {
           selectedChatData: currentChatData,
           selectedChatType: currentChatType,
@@ -32,14 +34,25 @@ export const SocketProvider = ({ children }) => {
           addContactInDMContacts,
         } = useAppStore.getState();
 
+        // Add the received message
         if (
           currentChatType !== undefined &&
+          message.recipient._id !== AI_BOT_ID &&
           (currentChatData._id === message.sender._id ||
             currentChatData._id === message.recipient._id)
         ) {
+          console.log("kenil");
           addMessage(message);
         }
         addContactInDMContacts(message);
+
+        // Trigger AI bot response if the recipient is the AI bot
+        if (message.recipient._id === AI_BOT_ID) {
+          // alert("hello");
+          socket.current.emit("triggerAIResponse", message);
+          addMessage(message);
+          console.log("AI response received:", message);
+        }
       };
 
       const handleReceiveChannelMessage = (message) => {

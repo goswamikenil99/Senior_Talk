@@ -95,11 +95,11 @@ const CreateChannel = () => {
               placeholder="Search Contacts"
               value={selectedContacts}
               onChange={setSelectedContacts}
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  No results found.
-                </p>
-              }
+              // emptyIndicator={
+              //   <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+              //     No results found.
+              //   </p>
+              // }
             />
           </div>
           <div>

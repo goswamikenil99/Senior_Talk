@@ -27,36 +27,34 @@ const MessageContainer = () => {
     setIsDownloading,
   } = useAppStore();
   const messageEndRef = useRef(null);
-
-  useEffect(() => {
-    const getMessages = async () => {
-      const response = await apiClient.post(
-        FETCH_ALL_MESSAGES_ROUTE,
-        {
-          id: selectedChatData._id,
-        },
-        { withCredentials: true }
-      );
-
-      if (response.data.messages) {
-        setSelectedChatMessages(response.data.messages);
+    useEffect(() => {
+      const getMessages = async () => {
+        const response = await apiClient.post(
+          FETCH_ALL_MESSAGES_ROUTE,
+          {
+            id: selectedChatData._id,
+          },
+          { withCredentials: true }
+        );
+  
+        if (response.data.messages) {
+          setSelectedChatMessages(response.data.messages);
+        }
+      };
+      const getChannelMessages = async () => {
+        const response = await apiClient.get(
+          `${GET_CHANNEL_MESSAGES}/${selectedChatData._id}`,
+          { withCredentials: true }
+        );
+        if (response.data.messages) {
+          setSelectedChatMessages(response.data.messages);
+        }
+      };
+      if (selectedChatData._id) {
+        if (selectedChatType === "contact") getMessages();
+        else if (selectedChatType === "channel") getChannelMessages();
       }
-    };
-    const getChannelMessages = async () => {
-      const response = await apiClient.get(
-        `${GET_CHANNEL_MESSAGES}/${selectedChatData._id}`,
-        { withCredentials: true }
-      );
-      if (response.data.messages) {
-        setSelectedChatMessages(response.data.messages);
-      }
-    };
-    if (selectedChatData._id) {
-      if (selectedChatType === "contact") getMessages();
-      else if (selectedChatType === "channel") getChannelMessages();
-    }
-  }, [selectedChatData, selectedChatType, setSelectedChatMessages]);
-
+    }, [selectedChatData, selectedChatType, setSelectedChatMessages]);
   useEffect(() => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });

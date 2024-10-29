@@ -5,7 +5,7 @@ import { HOST } from "@/lib/constants";
 import { getColor } from "@/lib/utils";
 
 const ChatHeader = () => {
-  const { selectedChatData, closeChat, selectedChatType } = useAppStore();
+  const { selectedChatData, closeChat, selectedChatType} = useAppStore();
   return (
     <div className="h-[10vh] border-b-2 border-[#2f303b] flex items-center justify-between px-20">
       <div className="flex gap-5 items-center">

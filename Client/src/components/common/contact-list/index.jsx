@@ -10,7 +10,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
     setSelectedChatData,
     setSelectedChatMessages,
   } = useAppStore();
-
+// console.log(contacts._id);
   const handleClick = (contact) => {
     if (isChannel) setSelectedChatType("channel");
     else setSelectedChatType("contact");
@@ -19,10 +19,44 @@ const ContactList = ({ contacts, isChannel = false }) => {
       setSelectedChatMessages([]);
     }
   };
+  const handleClick2 = (contact) => {
+    setSelectedChatType("contact");
+    setSelectedChatData(contact);
+  };
 
   return (
     <div className="mt-5">
-      {contacts.map((contact) => (
+      {contacts._id === 1  
+      ? (
+        <div
+          key={contacts._id}
+          className={`pl-10 py-2  transition-all duration-300 cursor-pointer ${
+            contacts._id !=1
+              ? "bg-[#8417ff] hover:bg-[#8417ff]"
+              : "hover:bg-[#f1f1f111] "
+          }`}
+          // onClick={() => handleClick2(contacts)}
+        >
+          <div className="flex gap-5 items-center justify-start text-neutral-300">
+            {!isChannel && (
+              <Avatar className="h-10 w-10 ">
+                <AvatarFallback
+                  className={`uppercase ${
+                    contacts._id != 1
+                      ? "bg-[#ffffff22] border border-white/50"
+                      : getColor(contacts.color)
+                  } h-10 w-10 flex items-center justify-center rounded-full`}
+                >
+                  {contacts.firstName.split("").shift()}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <span>{`${contacts.firstName} ${contacts.lastName}`}</span>
+          </div>
+        </div>
+      )
+      :
+      (contacts.map((contact) => (
         <div
           key={contact._id}
           className={`pl-10 py-2  transition-all duration-300 cursor-pointer ${
@@ -68,7 +102,8 @@ const ContactList = ({ contacts, isChannel = false }) => {
             )}
           </div>
         </div>
-      ))}
+      )))
+    }
     </div>
   );
 };

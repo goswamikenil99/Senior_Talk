@@ -20,7 +20,7 @@ const Chat = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (!userInfo.profileSetup) {
-      toast("Please setup profile to continue.");
+      setTimeout(()=>{toast("Please setup profile to continue.");},2000);
       navigate("/profile");
     }
   }, [userInfo, navigate]);

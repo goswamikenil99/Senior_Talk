@@ -241,7 +241,7 @@ export const otp=async (req,res,next)=>{
 
     try {
         await transporter.sendMail(mailOptions);
-        res.status(200).json({ message: 'OTP sent successfully', otp }); // You may want to store the OTP for verification later
+        res.status(200).json({ message: 'OTP sent successfully', otp : otp }); // You may want to store the OTP for verification later
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to send OTP' });
