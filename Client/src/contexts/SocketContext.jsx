@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 const SocketContext = createContext(null);
 
 // Define AI bot ID for easy reference
-const AI_BOT_ID = "671bf8fb5b728535e42a46db"; // AI bot's _id
+const AI_BOT_ID = "673227360f9c48a50cb29018"; // AI bot's _id
 
 export const useSocket = () => {
   return useContext(SocketContext);

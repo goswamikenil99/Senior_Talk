@@ -34,8 +34,12 @@ app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
 
-const server = app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0' ,() => {
   console.log(`Server is running at http://localhost:${port}`);
+});
+
+app.get('/', (req, res) => {
+  res.send('Hello from Node.js Backend!');
 });
 
 setupSocket(server);

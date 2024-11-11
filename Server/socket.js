@@ -17,7 +17,7 @@ const setupSocket = (server) => {
   });
 
   const userSocketMap = new Map();
-  const AI_BOT_ID = "671bf8fb5b728535e42a46db";
+  const AI_BOT_ID = "673227360f9c48a50cb29018";
 
   const addChannelNotify = async (channel) => {
     if (channel && channel.members) {
@@ -45,7 +45,7 @@ const setupSocket = (server) => {
     if (senderSocketId) {
       io.to(senderSocketId).emit("receiveMessage", messageData);
     }
-    if (!recipientSocketId && message.recipient!='671bf8fb5b728535e42a46db') {
+    if (!recipientSocketId && message.recipient!='673227360f9c48a50cb29018') {
       const user = await User.findOne({ _id: message.recipient});
       console.log(user);
       const userMessage = message.content;
