@@ -22,6 +22,7 @@ export const GET_CHANNEL_MESSAGES = `${CHANNEL_ROUTES}/get-channel-messages`;
 
 export const CONTACTS_ROTUES = "/api/contacts";
 export const SEARCH_CONTACTS_ROUTES = `${CONTACTS_ROTUES}/search`;
+export const DELETE_CONTACT = `${CONTACTS_ROTUES}/delete`;
 export const GET_CONTACTS_WITH_MESSAGES_ROUTE = `${CONTACTS_ROTUES}/get-contacts-for-list`;
 export const GET_ALL_CONTACTS = `${CONTACTS_ROTUES}/all-contacts`;
 

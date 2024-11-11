@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import User from "./model/UserModel.js";
 import dotenv from "dotenv";
 dotenv.config();
-const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
+const genAI = new GoogleGenerativeAI("AIzaSyCW8U9H4sHsPuP5fHtX90Em25o46q7N0_Q");
 
 const setupSocket = (server) => {
   const io = new SocketIOServer(server, {
@@ -17,7 +17,7 @@ const setupSocket = (server) => {
   });
 
   const userSocketMap = new Map();
-  const AI_BOT_ID = process.env.AI_BOT_ID;
+  const AI_BOT_ID = "671bf8fb5b728535e42a46db";
 
   const addChannelNotify = async (channel) => {
     if (channel && channel.members) {
