@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  role: {
+    type: String,
+    required: false,
+  },
   image: {
     type: String,
     required: false,
@@ -30,6 +34,14 @@ const userSchema = new mongoose.Schema({
   color: {
     type: Number,
     required: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

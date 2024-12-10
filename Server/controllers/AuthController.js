@@ -3,6 +3,7 @@ import User from "../model/UserModel.js";
 import { compare } from "bcrypt";
 import { renameSync, unlinkSync } from "fs";
 import nodemailer from "nodemailer";
+import mongoose from "mongoose";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 
@@ -12,36 +13,58 @@ const createToken = (email, userId) => {
   });
 };
 
-export const signup = async (req, res, next) => {
+export const signup = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(404).send("User alredy Exist Please Login.");
-    }
-    if (email && password) {
-      const user = await User.create({ email, password });
-      res.cookie("jwt", createToken(email, user.id), {
-        maxAge,
-        secure: true,
-        sameSite: "None",
-      });
+    const { email, password, role } = req.body;
 
-      return res.status(201).json({
-        user: {
-          id: user?.id,
-          email: user?.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          image: user.image,
-          profileSetup: user.profileSetup,
-        },
-      });
-    } else {
-      return res.status(400).send("Email and Password Required");
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(404).send("User already exists. Please log in.");
     }
+
+    // Validate email and password
+    if (!email || !password) {
+      return res.status(400).send("Email and Password are required.");
+    }
+
+    // Default role as student
+    let userRole = "student";
+
+    // If the role selected is professor, validate against Professor collection
+    if (role === "professor") {
+      const professorCollection = mongoose.connection.db.collection('professor');
+      const professor = await professorCollection.findOne({ email });
+
+      if (!professor) {
+        return res.status(400).send("Professor not verified. Please contact admin.");
+      }
+      userRole = "professor";
+    }
+
+    // Create new user with the determined role
+    const newUser = await User.create({ email, password, role: userRole });
+    
+    // Set JWT cookie
+    res.cookie("jwt", createToken(email, newUser.id), {
+      maxAge,
+      secure: true,
+      sameSite: "None",
+    });
+
+    // Respond with user details
+    return res.status(201).json({
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        profileSetup: newUser.profileSetup,
+      },
+    });
   } catch (err) {
-    console.log(err);
+    console.error("Signup Error:", err);
     return res.status(500).send("Internal Server Error");
   }
 };

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { validateEmail, validatePassword } from "@/utils/validation";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
-import { useGoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -23,26 +23,31 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState(""); // OTP state
   const [timer, setTimer] = useState(120); // Timer for OTP
+  const [role, setRole] = useState("student"); // State for selecting role
 
-//////////////login with google
+  //////////////login with google
 
-   // Initialize Google login
-   const googleLogin = useGoogleLogin({
+  // Initialize Google login
+  const googleLogin = useGoogleLogin({
     onSuccess: async (response) => {
       try {
         // Fetch user info
-        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: {
-            Authorization: `Bearer ${response.access_token}`,
-          },
-        }).then((res) => res.json());
+        const userInfo = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${response.access_token}`,
+            },
+          }
+        ).then((res) => res.json());
         toast.success("Google login successful!");
         try {
           const response = await apiClient.post(
             SIGNUP_ROUTE,
             {
-              email:userInfo.email,
-              password : "123456",
+              email: userInfo.email,
+              password: "123456",
+              role : "student",
             },
             { withCredentials: true }
           );
@@ -50,14 +55,14 @@ const Auth = () => {
             console.log(response.status);
             setUserInfo(response.data.user);
           }
-      } catch (e) {
-        if (e.response.status == 404) {
-          try {
+        } catch (e) {
+          if (e.response.status == 404) {
+            try {
               const response = await apiClient.post(
                 LOGIN_ROUTE,
-                { 
-                  email:userInfo.email,
-                  password : "123456",
+                {
+                  email: userInfo.email,
+                  password: "123456",
                 },
                 { withCredentials: true }
               );
@@ -68,23 +73,22 @@ const Auth = () => {
               } else {
                 console.log("error");
               }
-          } catch (e) {
-            if (e.response.status === Number(404)) {
-              toast.error("User Not Found");
-              return false;
+            } catch (e) {
+              if (e.response.status === Number(404)) {
+                toast.error("User Not Found");
+                return false;
+              }
+              if (e.response.status === Number(400)) {
+                toast.error("Invalid Password");
+                return false;
+              } else {
+                toast.error("unwanted Error!!");
+              }
             }
-            if (e.response.status === Number(400)) {
-              toast.error("Invalid Password");
-              return false;
-            } else {
-              toast.error("unwanted Error!!");
-            }
+          } else {
+            toast.error("Internal Server Error");
           }
         }
-        else{
-          toast.error("Internal Server Error");
-        }
-      }
       } catch (error) {
         toast.error("Failed to retrieve Google user info.");
       }
@@ -94,7 +98,6 @@ const Auth = () => {
     },
   });
   /////////////////////////////////////////////////////////////
-  
 
   // OTP Countdown Timer
   useEffect(() => {
@@ -182,6 +185,8 @@ const Auth = () => {
         );
         if (response.data.user.id) {
           setUserInfo(response.data.user);
+          if (response.data.user.role === "student") window.open("https://chatgpt.com", "_blank", "noopener,noreferrer");
+          else  window.open("https://google.com", "_blank", "noopener,noreferrer");
           if (response.data.user.profileSetup) navigate("/chat");
           else navigate("/profile");
         } else {
@@ -203,45 +208,45 @@ const Auth = () => {
   };
 
   const handleSignup = async () => {
+    if (!validateSignup()) return;
+
     try {
-      if (validateSignup()) {
-        const response = await apiClient.post(
-          SIGNUP_ROUTE,
-          {
-            email,
-            password,
-          },
-          { withCredentials: true }
-        );
-        if (response.status == 201) {
-          console.log(typeof response.status);
-          setTemp(0);
-          setUserInfo(response.data.user);
-        }
+      const response = await apiClient.post(
+        SIGNUP_ROUTE,
+        {
+          email,
+          password,
+          role, // Pass the role to the backend
+        },
+        { withCredentials: true }
+      );
+
+      if (response.status === 201) {
+        setUserInfo(response.data.user);
+        if (response.data.user.role === "student") window.open("https://chatgpt.com", "_blank", "noopener,noreferrer");
+        else  window.open("https://google.com", "_blank", "noopener,noreferrer");
+        navigate("/profile");
       }
-    } catch (e) {
-      if (e.response.status == 404) {
-        handleLogin();
-        return toast.error("User Alredy Exist");
-      }
-      toast.error("internal Server Error");
+    } catch (error) {
+      // console.log(error.response)
+      toast.error(error.response.data || "Signup failed");
     }
   };
 
-  const handlegoogleLogin = async () => { 
+  const handlegoogleLogin = async () => {
     try {
-        const response = await apiClient.post(
-          SIGNUP_ROUTE,
-          {
-            email,
-            password,
-          },
-          { withCredentials: true }
-        );
-        if (response.status == 201) {
-          console.log(response.status);
-          setUserInfo(response.data.user);
-        }
+      const response = await apiClient.post(
+        SIGNUP_ROUTE,
+        {
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
+      if (response.status == 201) {
+        console.log(response.status);
+        setUserInfo(response.data.user);
+      }
     } catch (e) {
       if (e.response.status == 404) {
         return toast.error("User Alredy Exist");
@@ -251,98 +256,73 @@ const Auth = () => {
   };
 
   return temp === 1 ? (
-    <div className="h-[100vh] w-[100vw] flex items-center justify-center">
-      <div className="h-[80vh] bg-white  border-2 border-white  text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
-        <div className="flex flex-col gap-10 items-center justify-center">
-          <div className="flex  items-center justify-center flex-col">
-            <div className="flex  items-center justify-center">
-              <h1 className="text-5xl md:text-6xl font-bold">Welcome</h1>
-              <img src={Victory} className="h-[100px]" />
+    <div className="min-h-screen w-full flex items-center justify-center px-4">
+  <div className="min-h-[80vh] bg-white border-2 border-white text-opacity-90 shadow-2xl w-full max-w-screen-xl rounded-3xl grid xl:grid-cols-2">
+    <div className="flex flex-col gap-10 items-center justify-center p-4">
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center">
+          <h1 className="text-5xl md:text-6xl font-bold text-center">Welcome</h1>
+          <img src={Victory} className="h-20 md:h-24" />
+        </div>
+        <p className="font-medium text-center">
+          Fill in the details to get started with the best chat app!
+        </p>
+      </div>
+      <div className="w-full">
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="bg-transparent rounded-none w-full">
+            <TabsTrigger className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value="login">
+              Login
+            </TabsTrigger>
+            <TabsTrigger className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value="signup">
+              Signup
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="login" className="flex flex-col gap-5 mt-6">
+            <Input placeholder="Email" type="email" className="rounded-full p-4" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input placeholder="Password" type="password" className="rounded-full p-4" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Button className="rounded-full p-4" onClick={handleLogin}>
+              Login
+            </Button>
+            <Button className="rounded-full p-4 flex items-center justify-center gap-3" onClick={() => googleLogin()}>
+              <FcGoogle size={20} /> Login with Google
+            </Button>
+          </TabsContent>
+          <TabsContent value="signup" className="flex flex-col gap-5 mt-6">
+            {/* Signup Inputs */}
+            <Input placeholder="Email" type="email" className="rounded-full p-4" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input placeholder="Password" type="password" className="rounded-full p-4" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input placeholder="Confirm Password" type="password" className="rounded-full p-4" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            {/* Radio Buttons */}
+            <div className="flex justify-around my-3 space-x-4">
+              {/* Student and Professor Buttons */}
+              <label className="cursor-pointer">
+                <input type="radio" value="student" checked={role === "student"} onChange={() => setRole("student")} className="hidden" />
+                <div className={`px-4 py-2 rounded-full border-2 ${role === "student" ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}>
+                  Student
+                </div>
+              </label>
+              <label className="cursor-pointer">
+                <input type="radio" value="professor" checked={role === "professor"} onChange={() => setRole("professor")} className="hidden" />
+                <div className={`px-4 py-2 rounded-full border-2 ${role === "professor" ? "bg-purple-600 border-purple-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}>
+                  Professor
+                </div>
+              </label>
             </div>
-            <p className="font-medium text-center">
-              Fill in the details to get started with the best chat app!
-            </p>
-          </div>
-          <div className="flex items-center justify-center w-full ">
-            <Tabs defaultValue="login" className="w-3/4">
-              <TabsList className="bg-transparent rounded-none w-full ">
-                <TabsTrigger
-                  className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2    rounded-none w-full data-[state=active]:text-black  data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300"
-                  value="login"
-                >
-                  Login
-                </TabsTrigger>
-                <TabsTrigger
-                  className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2   rounded-none w-full data-[state=active]:text-black  data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300 "
-                  value="signup"
-                >
-                  Signup
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="login" className="flex flex-col gap-5 mt-10">
-                <Input
-                  placeholder="Email"
-                  type="email"
-                  className="rounded-full p-6"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  placeholder="Password"
-                  type="password"
-                  className="rounded-full p-6"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button className="rounded-full p-6" onClick={handleLogin}>
-                  Login
-                </Button>
-                {/* Google Login Button */}
-                <Button
-                  className="rounded-full p-6 flex items-center justify-center gap-3"
-                  onClick={() => googleLogin()}
-                >
-                  <FcGoogle size={24} /> {/* Google icon */}
-                  Login with Google
-                </Button>
-              </TabsContent>
-              <TabsContent value="signup" className="flex flex-col gap-5 ">
-                <Input
-                  placeholder="Email"
-                  type="email"
-                  className="rounded-full p-6"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  placeholder="Password"
-                  type="password"
-                  className="rounded-full p-6"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Input
-                  placeholder="Confirm Password"
-                  type="password"
-                  className="rounded-full p-6"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <Button className="rounded-full p-6" onClick={handleSignup}>
-                  Signup
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-        <div className="hidden xl:flex justify-center items-center ">
-          <img src={Background} className="h-[700px] " />
-        </div>
-
-        {/* Login Signup COmponent */}
-        {/* Branding */}
+            <Button className="rounded-full p-4" onClick={handleSignup}>
+              Signup
+            </Button>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
+    {/* Image Section */}
+    <div className="hidden xl:flex justify-center items-center">
+      <img src={Background} className="max-h-[600px] xl:max-h-[700px]" />
+    </div>
+  </div>
+</div>
+
   ) : (
     // OTP Verification Page
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
