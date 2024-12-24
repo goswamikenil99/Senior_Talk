@@ -24,26 +24,12 @@ export const signup = async (req, res) => {
     }
 
     // Validate email and password
-    if (!email || !password) {
-      return res.status(400).send("Email and Password are required.");
-    }
-
-    // Default role as student
-    let userRole = "student";
-
-    // If the role selected is professor, validate against Professor collection
-    if (role === "professor") {
-      const professorCollection = mongoose.connection.db.collection('professor');
-      const professor = await professorCollection.findOne({ email });
-
-      if (!professor) {
-        return res.status(400).send("Professor not verified. Please contact admin.");
-      }
-      userRole = "professor";
+    if (!email || !password || !role) {
+      return res.status(400).send("some credentials are Missing.");
     }
 
     // Create new user with the determined role
-    const newUser = await User.create({ email, password, role: userRole });
+    const newUser = await User.create({ email, password, role});
     
     // Set JWT cookie
     res.cookie("jwt", createToken(email, newUser.id), {
@@ -94,6 +80,7 @@ export const login = async (req, res, next) => {
           lastName: user.lastName,
           image: user.image,
           profileSetup: user.profileSetup,
+          role : user?.role,
         },
       });
     } else {

@@ -23,7 +23,35 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState(""); // OTP state
   const [timer, setTimer] = useState(120); // Timer for OTP
-  const [role, setRole] = useState("student"); // State for selecting role
+  const [role, setRole] = useState(); // State for selecting role
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const user_role = sessionStorage.getItem('role');
+  if(user_role === "student"){
+    console.log("kenil");
+    window.open(
+      "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/home/exploring-scenarios-through-guided-case-studies",
+      "_self",
+      "noopener,noreferrer"
+    );
+    return;
+  }
+  if(user_role === "admin"){
+    window.open(
+      "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-admin-staff_1",
+      "_self",
+      "noopener,noreferrer"
+    );
+    return;
+  }
+  if(user_role === "professor"){
+    window.open(
+      "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-professors_1",
+      "_self",
+      "noopener,noreferrer"
+    );
+    return;
+  }
 
   //////////////login with google
 
@@ -47,12 +75,36 @@ const Auth = () => {
             {
               email: userInfo.email,
               password: "123456",
-              role : "student",
+              role: role,
             },
             { withCredentials: true }
           );
           if (response.status == 201) {
             console.log(response.status);
+            setUserInfo(response.data.user);
+            if (response.data.user.role === "student") {
+              sessionStorage.setItem("role", "student");
+              window.open(
+                "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/home/exploring-scenarios-through-guided-case-studies",
+                "_self",
+                "noopener,noreferrer"
+              );
+            }
+            if (response.data.user.role === "admin") {
+              sessionStorage.setItem("role", "admin");
+              window.open(
+                "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-admin-staff_1",
+                "_self",
+                "noopener,noreferrer"
+              );
+            }
+            if (response.data.user.role === "professor") {
+              sessionStorage.setItem("role", "professor");
+              window.open("https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-professors_1", "_self", "noopener,noreferrer");
+            }
+            if (!response.data.user.role) {
+              toast.error("Something is Missing in role");
+            }
             setUserInfo(response.data.user);
           }
         } catch (e) {
@@ -68,8 +120,35 @@ const Auth = () => {
               );
               if (response.data.user.id) {
                 setUserInfo(response.data.user);
-                if (response.data.user.profileSetup) navigate("/chat");
-                else navigate("/profile");
+                if (response.data.user.role === "student") {
+                  // Storing a string in sessionStorage
+                  sessionStorage.setItem("role", "student");
+                  window.open(
+                    "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/home/exploring-scenarios-through-guided-case-studies",
+                    "_self",
+                    "noopener,noreferrer"
+                  );
+                }
+                if (response.data.user.role === "admin") {
+                  sessionStorage.setItem("role", "admin");
+                  window.open(
+                    "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-admin-staff_1",
+                    "_self",
+                    "noopener,noreferrer"
+                  );
+                }
+                if (response.data.user.role === "professor") {
+                  sessionStorage.setItem("role", "professor");
+                  window.open(
+                    "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-professors_1",
+                    "_self",
+                    "noopener,noreferrer"
+                  );
+                }
+                if (!response.data.user.role) {
+                  toast.error("Something is Missing in role");
+                }
+                setUserInfo(response.data.user);
               } else {
                 console.log("error");
               }
@@ -90,6 +169,7 @@ const Auth = () => {
           }
         }
       } catch (error) {
+        console.log(error);
         toast.error("Failed to retrieve Google user info.");
       }
     },
@@ -98,40 +178,6 @@ const Auth = () => {
     },
   });
   /////////////////////////////////////////////////////////////
-
-  // OTP Countdown Timer
-  useEffect(() => {
-    let interval;
-    if (timer > 0) {
-      interval = setInterval(
-        () => setTimer((prevTimer) => prevTimer - 1),
-        1000
-      );
-    } else if (timer === 0) {
-      clearInterval(interval); // Stop the timer when it reaches zero
-    }
-    return () => clearInterval(interval); // Clean up interval on unmount
-  }, [temp, timer]);
-
-  const handleOTPVerification = async () => {
-    if (otp.length !== 4) {
-      toast.error("OTP must be 4 digits.");
-      return;
-    }
-    try {
-      const response = await apiClient.post(
-        OTP_ROUTE,
-        { email },
-        { withCredentials: true }
-      );
-      if (response.status === 200) {
-        toast.success("OTP Verified!");
-        navigate("/profile");
-      }
-    } catch (e) {
-      toast.error("Invalid OTP");
-    }
-  };
 
   const validateLogin = () => {
     if (!email.length) {
@@ -173,6 +219,10 @@ const Auth = () => {
       toast.error("Password and Confirm Password should be same.");
       return false;
     }
+    if (!role) {
+      toast.error("Select Your Role.");
+      return false;
+    }
     return true;
   };
   const handleLogin = async () => {
@@ -185,10 +235,25 @@ const Auth = () => {
         );
         if (response.data.user.id) {
           setUserInfo(response.data.user);
-          if (response.data.user.role === "student") window.open("https://chatgpt.com", "_blank", "noopener,noreferrer");
-          else  window.open("https://google.com", "_blank", "noopener,noreferrer");
-          if (response.data.user.profileSetup) navigate("/chat");
-          else navigate("/profile");
+          if (response.data.user.role === "student") {
+            sessionStorage.setItem("role", "student");
+            window.open(
+              "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/home/exploring-scenarios-through-guided-case-studies",
+              "_self",
+              "noopener,noreferrer"
+            );
+          }
+          if (response.data.user.role === "admin") {
+            sessionStorage.setItem("role", "admin");
+            window.open("https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-admin-staff_1", "_self", "noopener,noreferrer");
+          }
+          if (response.data.user.role === "professor") {
+            sessionStorage.setItem("role", "professor");
+            window.open("https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-professors_1", "_self", "noopener,noreferrer");
+          }
+          if (!response.data.user.role) {
+            toast.error("Something is Missing in role");
+          }
         } else {
           console.log("error");
         }
@@ -223,9 +288,25 @@ const Auth = () => {
 
       if (response.status === 201) {
         setUserInfo(response.data.user);
-        if (response.data.user.role === "student") window.open("https://chatgpt.com", "_blank", "noopener,noreferrer");
-        else  window.open("https://google.com", "_blank", "noopener,noreferrer");
-        navigate("/profile");
+        if (response.data.user.role === "student") {
+          sessionStorage.setItem("role", "student");
+          window.open(
+            "https://sites.google.com/ganpatuniversity.ac.in/guni-ai/home/exploring-scenarios-through-guided-case-studies",
+            "_self",
+            "noopener,noreferrer"
+          );
+        }
+        if (response.data.user.role === "admin") {
+          sessionStorage.setItem("role", "admin");
+          window.open("https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-admin-staff_1", "_self", "noopener,noreferrer");
+        }
+        if (response.data.user.role === "professor") {
+          sessionStorage.setItem("role", "professor");
+          window.open("https://sites.google.com/ganpatuniversity.ac.in/guni-ai/ai-for-professors_1", "_self", "noopener,noreferrer");
+        }
+        if (!response.data.user.role) {
+          toast.error("Something is Missing in role");
+        }
       }
     } catch (error) {
       // console.log(error.response)
@@ -233,135 +314,192 @@ const Auth = () => {
     }
   };
 
-  const handlegoogleLogin = async () => {
-    try {
-      const response = await apiClient.post(
-        SIGNUP_ROUTE,
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-      if (response.status == 201) {
-        console.log(response.status);
-        setUserInfo(response.data.user);
-      }
-    } catch (e) {
-      if (e.response.status == 404) {
-        return toast.error("User Alredy Exist");
-      }
-      toast.error("User Alredy Exist2");
+  const handleModalSubmit = () => {
+    if (role) {
+      setIsModalOpen(false);
+      toast.success(`Proceeding with Google login as ${role}`);
+      googleLogin();
+      // Continue with the Google login process here
+    } else {
+      toast.error("Please select a role before proceeding.");
     }
   };
 
-  return temp === 1 ? (
+  return (
     <div className="min-h-screen w-full flex items-center justify-center px-4">
-  <div className="min-h-[80vh] bg-white border-2 border-white text-opacity-90 shadow-2xl w-full max-w-screen-xl rounded-3xl grid xl:grid-cols-2">
-    <div className="flex flex-col gap-10 items-center justify-center p-4">
-      <div className="flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-center">Welcome</h1>
-          <img src={Victory} className="h-20 md:h-24" />
-        </div>
-        <p className="font-medium text-center">
-          Fill in the details to get started with the best chat app!
-        </p>
-      </div>
-      <div className="w-full">
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="bg-transparent rounded-none w-full">
-            <TabsTrigger className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value="login">
-              Login
-            </TabsTrigger>
-            <TabsTrigger className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value="signup">
-              Signup
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="login" className="flex flex-col gap-5 mt-6">
-            <Input placeholder="Email" type="email" className="rounded-full p-4" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Input placeholder="Password" type="password" className="rounded-full p-4" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <Button className="rounded-full p-4" onClick={handleLogin}>
-              Login
-            </Button>
-            <Button className="rounded-full p-4 flex items-center justify-center gap-3" onClick={() => googleLogin()}>
-              <FcGoogle size={20} /> Login with Google
-            </Button>
-          </TabsContent>
-          <TabsContent value="signup" className="flex flex-col gap-5 mt-6">
-            {/* Signup Inputs */}
-            <Input placeholder="Email" type="email" className="rounded-full p-4" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Input placeholder="Password" type="password" className="rounded-full p-4" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <Input placeholder="Confirm Password" type="password" className="rounded-full p-4" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-            {/* Radio Buttons */}
-            <div className="flex justify-around my-3 space-x-4">
-              {/* Student and Professor Buttons */}
-              <label className="cursor-pointer">
-                <input type="radio" value="student" checked={role === "student"} onChange={() => setRole("student")} className="hidden" />
-                <div className={`px-4 py-2 rounded-full border-2 ${role === "student" ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}>
-                  Student
-                </div>
-              </label>
-              <label className="cursor-pointer">
-                <input type="radio" value="professor" checked={role === "professor"} onChange={() => setRole("professor")} className="hidden" />
-                <div className={`px-4 py-2 rounded-full border-2 ${role === "professor" ? "bg-purple-600 border-purple-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}>
-                  Professor
-                </div>
-              </label>
+      <div className="min-h-[80vh] bg-white border-2 border-white text-opacity-90 shadow-2xl w-full max-w-screen-xl rounded-3xl grid xl:grid-cols-2">
+        <div className="flex flex-col gap-10 items-center justify-center p-4">
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center justify-center">
+              <h1 className="text-5xl md:text-6xl font-bold text-center">
+                Welcome
+              </h1>
+              <img src={Victory} className="h-20 md:h-24" />
             </div>
-            <Button className="rounded-full p-4" onClick={handleSignup}>
-              Signup
-            </Button>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-    {/* Image Section */}
-    <div className="hidden xl:flex justify-center items-center">
-      <img src={Background} className="max-h-[600px] xl:max-h-[700px]" />
-    </div>
-  </div>
-</div>
-
-  ) : (
-    // OTP Verification Page
-    <div className="h-[100vh] w-[100vw] flex items-center justify-center">
-      <div className="h-[80vh] bg-white border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
-        <div className="flex flex-col items-center justify-center gap-10">
-          <div className="flex items-center justify-center">
-            <h1 className="text-5xl md:text-5xl font-extrabold">
-              OTP Verification
-            </h1>
-            <img src={Victory} className="h-[100px]" />
-          </div>
-          <p className="font-medium text-2xl text-center">
-            Enter the OTP sent to your email
-          </p>
-          <div className="flex flex-col gap-5 w-3/4">
-            <Input
-              placeholder="Enter OTP"
-              type="text"
-              maxLength={4}
-              className="rounded-full p-6 text-center text-2xl font-semibold"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-            />
-            <p className="text-lg text-red-600 text-center">
-              Time remaining: {timer}s
+            <p className="font-medium text-center text-gray-800">
+              Fill in the details to get started with{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 font-extrabold text-lg">
+                GUNI AI
+              </span>
             </p>
-            <Button
-              className="rounded-full p-6"
-              onClick={handleOTPVerification}
-              disabled={otp.length !== 4 || timer <= 0}
-            >
-              Verify OTP
-            </Button>
+          </div>
+          <div className="w-full">
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="bg-transparent rounded-none w-full">
+                <TabsTrigger
+                  className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300"
+                  value="login"
+                >
+                  Login
+                </TabsTrigger>
+                <TabsTrigger
+                  className="data-[state=active]:bg-transparent text-black text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300"
+                  value="signup"
+                >
+                  Signup
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="login" className="flex flex-col gap-5 mt-6">
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  className="rounded-full p-4"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  className="rounded-full p-4"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Button className="rounded-full p-4" onClick={handleLogin}>
+                  Login
+                </Button>
+                <Button
+                  className="rounded-full p-4 flex items-center justify-center gap-3"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <FcGoogle size={20} /> Login with Google
+                </Button>
+              </TabsContent>
+              <TabsContent value="signup" className="flex flex-col gap-5 mt-6">
+                {/* Signup Inputs */}
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  className="rounded-full p-4"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  className="rounded-full p-4"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Input
+                  placeholder="Confirm Password"
+                  type="password"
+                  className="rounded-full p-4"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                {/* Radio Buttons */}
+                <div className="flex justify-center my-6 space-x-6">
+                  {/* Student, Professor, and Admin Buttons */}
+                  {["student", "professor", "admin"].map((roleOption) => (
+                    <label key={roleOption} className="cursor-pointer group">
+                      <input
+                        type="radio"
+                        value={roleOption}
+                        checked={role === roleOption}
+                        onChange={() => setRole(roleOption)}
+                        className="hidden"
+                      />
+                      <div
+                        className={`px-6 py-3 rounded-full border-2 transition-all duration-300 ease-in-out transform group-hover:scale-105 ${
+                          role === roleOption
+                            ? roleOption === "student"
+                              ? "bg-blue-600 border-blue-600 text-white"
+                              : roleOption === "professor"
+                              ? "bg-purple-600 border-purple-600 text-white"
+                              : "bg-green-600 border-green-600 text-white"
+                            : "bg-white border-gray-300 text-gray-700 group-hover:border-gray-500"
+                        }`}
+                      >
+                        {roleOption.charAt(0).toUpperCase() +
+                          roleOption.slice(1)}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                <Button className="rounded-full p-4" onClick={handleSignup}>
+                  Signup
+                </Button>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
+        {/* Image Section */}
         <div className="hidden xl:flex justify-center items-center">
-          <img src={Background} className="h-[700px]" />
+          <img src={Background} className="max-h-[600px] xl:max-h-[700px]" />
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-center mb-4">
+              Select Your Role
+            </h2>
+            <div className="flex justify-center my-6 space-x-6">
+              {["student", "professor", "admin"].map((roleOption) => (
+                <label key={roleOption} className="cursor-pointer group">
+                  <input
+                    type="radio"
+                    value={roleOption}
+                    checked={role === roleOption}
+                    onChange={() => setRole(roleOption)}
+                    className="hidden"
+                  />
+                  <div
+                    className={`px-6 py-3 rounded-full border-2 transition-all duration-300 ease-in-out transform group-hover:scale-105 ${
+                      role === roleOption
+                        ? roleOption === "student"
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : roleOption === "professor"
+                          ? "bg-purple-600 border-purple-600 text-white"
+                          : "bg-green-600 border-green-600 text-white"
+                        : "bg-white border-gray-300 text-gray-700 group-hover:border-gray-500"
+                    }`}
+                  >
+                    {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                  </div>
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end space-x-4">
+              <Button
+                className="rounded-full p-3 bg-gray-300 text-gray-700 hover:bg-gray-400"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="rounded-full p-3 bg-blue-600 text-white hover:bg-blue-700"
+                onClick={handleModalSubmit}
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

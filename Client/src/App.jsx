@@ -18,12 +18,6 @@ const PrivateRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/auth" />;
 };
 
-const AuthRoute = ({ children }) => {
-  const { userInfo } = useAppStore();
-  const isAuthenticated = !!userInfo;
-  return isAuthenticated ? <Navigate to="/chat" /> : children;
-};
-
 function App() {
   const { userInfo, setUserInfo } = useAppStore();
   const [loading, setLoading] = useState(true);
@@ -46,12 +40,8 @@ function App() {
       }
     };
 
-    if (!userInfo) {
-      getUserData();
-    } else {
-      setLoading(false);
-    }
-  }, [userInfo, setUserInfo]);
+    getUserData();
+  }, [setUserInfo]);
 
   if (loading) {
     return <div>Loading...</div>; // Show a loading indicator while fetching user data
@@ -60,13 +50,11 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Always redirect to Auth */}
+        <Route path="/" element={<Navigate to="/auth" />} />
         <Route
           path="/auth"
-          element={
-            <AuthRoute>
-              <Auth />
-            </AuthRoute>
-          }
+          element={<Auth />}
         />
         <Route
           path="/chat"
