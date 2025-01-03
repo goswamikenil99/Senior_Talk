@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI("AIzaSyCW8U9H4sHsPuP5fHtX90Em25o46q7N0_Q");
 const setupSocket = (server) => {
   const io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.ORIGIN,
+      origin: ["http://localhost:5173", "http://202.131.126.201:5173"],
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -45,8 +45,8 @@ const setupSocket = (server) => {
     if (senderSocketId) {
       io.to(senderSocketId).emit("receiveMessage", messageData);
     }
-    if (!recipientSocketId && message.recipient!='676ac2fe5b73f905030212a9') {
-      const user = await User.findOne({ _id: message.recipient});
+    if (!recipientSocketId && message.recipient != "676ac2fe5b73f905030212a9") {
+      const user = await User.findOne({ _id: message.recipient });
       console.log(user);
       const userMessage = message.content;
       if (!userMessage) {
@@ -55,7 +55,7 @@ const setupSocket = (server) => {
       const status = {
         sender: message.recipient,
         recipient: message.sender,
-        content:  `Hello! It looks like ${user.firstName} ${user.lastName} isn’t available at the moment. I’ll let them know you reached out, or you can try again later.`,
+        content: `Hello! It looks like ${user.firstName} ${user.lastName} isn’t available at the moment. I’ll let them know you reached out, or you can try again later.`,
         messageType: "text",
         timestamp: new Date(),
       };

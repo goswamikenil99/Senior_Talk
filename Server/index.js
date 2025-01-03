@@ -15,11 +15,24 @@ const app = express();
 const port = process.env.PORT;
 const databaseURL = process.env.DATABSE_URL;
 
+// Define allowed origins
+const allowedOrigins = [
+  "http://localhost:5173", // For localhost
+  "http://202.131.126.201:5173", // For local network
+];
+
 app.use(
   cors({
-    origin: [process.env.ORIGIN],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true, // Allow cookies and auth headers
   })
 );
 
@@ -34,12 +47,12 @@ app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
 
-const server = app.listen(port, '0.0.0.0' ,() => {
+const server = app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello from Node.js Backend!');
+app.get("/", (req, res) => {
+  res.send("Hello from Node.js Backend!");
 });
 
 setupSocket(server);
